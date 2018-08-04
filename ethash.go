@@ -15,6 +15,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with the go-ethereum library. If not, see <http://www.gnu.org/licenses/>.
+// add log by Sturt
 
 package ethash
 
@@ -129,19 +130,19 @@ type Light struct {
 func (l *Light) Verify(block Block) bool {
 	// TODO: do ethash_quick_verify before getCache in order
 	// to prevent DOS attacks.
-	srvlog.Warn("Verify Hash Start...!!!!")
+	log.Info("Verify Hash Start...!!!!")
 	
 	blockNum := block.NumberU64()
-	srvlog.Warn("Verify: BlockNumber = %v", blockNum)
+	log.Info("Verify: BlockNumber = %v", blockNum)
 	
 	if blockNum >= epochLength*2048 {
 		log.Debug(fmt.Sprintf("block number %d too high, limit is %d", epochLength*2048))
-		srvlog.Warn("BlockNumber Fail in Verify...")
+		log.Info("BlockNumber Fail in Verify...")
 		return false
 	}
 
 	difficulty := block.Difficulty()
-	srvlog.Warn("Verify: difficulty = %v / %v", difficulty, common.Big0)
+	log.Info("Verify: difficulty = %v / %v", difficulty, common.Big0)
 	/* Cannot happen if block header diff is validated prior to PoW, but can
 		 happen if PoW is checked first due to parallel PoW checking.
 		 We could check the minimum valid difficulty but for SoC we avoid (duplicating)
@@ -149,33 +150,33 @@ func (l *Light) Verify(block Block) bool {
 	*/
 	if difficulty.Cmp(common.Big0) == 0 {
 		log.Debug("invalid block difficulty")
-		srvlog.Warn("invalid block difficulty in Verify...")
+		log.Info("invalid block difficulty in Verify...")
 		return false
 	}
 
 	cache := l.getCache(blockNum)
 	dagSize := C.ethash_get_datasize(C.uint64_t(blockNum))
 	
-	srvlog.Warn("Verify: getCache From Light = %v / dagSize = %v", cache, dagSize)
+	log.Info("Verify: getCache From Light = %v / dagSize = %v", cache, dagSize)
 	if l.test {
 		dagSize = dagSizeForTesting
 	}
 	// Recompute the hash using the cache.
 	ok, mixDigest, result := cache.compute(uint64(dagSize), block.HashNoNonce(), block.Nonce())
 	if !ok {
-		srvlog.Warn("compute Fail in Verify...")
+		log.Info("compute Fail in Verify...")
 		return false
 	}
 
 	// avoid mixdigest malleability as it's not included in a block's "hashNononce"
 	if block.MixDigest() != mixDigest {
-		srvlog.Warn("compare Mixdigest Fail in Verify...")
+		log.Info("compare Mixdigest Fail in Verify...")
 		return false
 	}
 
 	// The actual check.
 	target := new(big.Int).Div(maxUint256, difficulty)
-	srvlog.Warn("Verify target: %v", target)
+	log.Info("Verify target: %v", target)
 	return result.Big().Cmp(target) <= 0
 }
 
