@@ -25,8 +25,7 @@ int ethashGoCallback_cgo(unsigned);
 */
 import "C"
 
-import (
-	"log"
+import (	
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -42,8 +41,8 @@ import (
 	"unsafe"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
-	//	"github.com/ethereum/go-ethereum/log"
+	"github.com/ethereum/go-ethereum/crypto"	
+	"github.com/ethereum/go-ethereum/log"
 )
 
 var (
@@ -130,14 +129,14 @@ type Light struct {
 func (l *Light) Verify(block Block) bool {
 	// TODO: do ethash_quick_verify before getCache in order
 	// to prevent DOS attacks.
-	log.Printf("Verify Hash Start...!!!!")
+	srvlog.Warn("Verify Hash Start...!!!!")
 	
 	blockNum := block.NumberU64()
-	log.Printf("Verify: BlockNumber = %v", blockNum)
+	srvlog.Warn("Verify: BlockNumber = %v", blockNum)
 	
 	if blockNum >= epochLength*2048 {
-		//	log.Debug(fmt.Sprintf("block number %d too high, limit is %d", epochLength*2048))
-		log.Printf("BlockNumber Fail in Verify...")
+		log.Debug(fmt.Sprintf("block number %d too high, limit is %d", epochLength*2048))
+		srvlog.Warn("BlockNumber Fail in Verify...")
 		return false
 	}
 
